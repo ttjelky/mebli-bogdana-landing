@@ -18,25 +18,72 @@
     if (menu.classList.contains('is-open') && !menu.contains(e.target) && !burger.contains(e.target)) setMenu(false);
   });
 
-  /* Прокрутка: лінія під шапкою, активний пункт, липка панель на телефоні */
+  /* Індикатор активного пункту, що переїжджає (лише на десктопі, де меню в рядок) */
+  var pill = document.createElement('span');
+  pill.className = 'menu__pill';
+  pill.setAttribute('aria-hidden', 'true');
+  menu.insertBefore(pill, menu.firstChild);
+  var movePill = function (a) {
+    if (!a || a.offsetParent === null) { pill.style.opacity = 0; return; }
+    pill.style.opacity = 1;
+    pill.style.width = a.offsetWidth + 'px';
+    pill.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+  };
+
+  /* Прокрутка: стиснення шапки, активний пункт, липка панель на телефоні */
   var links = $$('#menu a[href^="#"]');
+  var hovered = null, current = null;
+  links.forEach(function (a) {
+    a.addEventListener('mouseenter', function () { hovered = a; movePill(a); });
+    a.addEventListener('mouseleave', function () { hovered = null; movePill(current); });
+  });
   var onScroll = function () {
     var y = window.scrollY;
-    $('#topbar').classList.toggle('is-scrolled', y > 8);
+    $('#topbar').classList.toggle('is-scrolled', y > 24);
 
-    var mark = y + 120, current = null;
+    var mark = y + 140;
+    current = null;
     links.forEach(function (a) {
       var sec = $(a.getAttribute('href'));
       if (sec && sec.offsetTop <= mark) current = a;
     });
     links.forEach(function (a) { a.classList.toggle('is-active', a === current); });
+    if (!hovered) movePill(current);
 
     var c = $('#contacts').getBoundingClientRect();
     var nearForm = c.top < window.innerHeight && c.bottom > 0;
     $('#dock').classList.toggle('is-shown', y > window.innerHeight * 0.6 && !nearForm);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
   onScroll();
+
+  /* Поява секцій при прокрутці (з невеликим «каскадом» у сітках) */
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if ('IntersectionObserver' in window && !reduced) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target;
+        el.classList.add('is-in');
+        io.unobserve(el);
+        // після появи знімаємо класи, щоб повільний перехід не гальмував hover
+        setTimeout(function () { el.classList.remove('rv', 'rv-img', 'is-in'); el.style.removeProperty('--d'); }, 1700);
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+
+    var mark = function (el, cls, delay) {
+      el.classList.add(cls);
+      if (delay) el.style.setProperty('--d', delay + 's');
+      io.observe(el);
+    };
+    $$('.block__head > *, .note, .order2__text > *, .contact2__info > *, .form2').forEach(function (el) { mark(el, 'rv'); });
+    ['.cat-grid', '.features', '.reviews2', '.steps2', '.clist'].forEach(function (sel) {
+      var box = $(sel);
+      if (box) Array.prototype.forEach.call(box.children, function (el, i) { mark(el, 'rv', Math.min(i, 5) * 0.08); });
+    });
+    $$('.order2__photos .op, .map2').forEach(function (el) { mark(el, 'rv-img'); });
+  }
 
   /* «Відчинено зараз» за графіком салону (київський час) */
   try {

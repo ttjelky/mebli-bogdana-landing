@@ -14,11 +14,14 @@
   --radius: 20px;
   --radius-sm: 12px;
   --shadow: 0 24px 48px -32px rgba(31, 34, 38, 0.35);
-  --ease: cubic-bezier(.2, .8, .2, 1);
+  --ease: cubic-bezier(.2, .8, .2, 1);          /* дрібні реакції: hover, натискання */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);     /* поява елементів */
+  --ease-spring: cubic-bezier(.32, .72, 0, 1);  /* панелі, індикатор меню */
+  --ease-pop: cubic-bezier(.34, 1.36, .5, 1);   /* відскок іконок */
 }
 
 /* ---------- База ---------- */
-html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
 html, body { overflow-x: clip; }
 body {
   background: var(--bg); color: var(--ink-2);
@@ -58,14 +61,27 @@ img { display: block; max-width: 100%; }
 .btn-pill--block { width: 100%; }
 
 /* ---------- Шапка ---------- */
+/* Плаваючий «острів»: шапка висить над сторінкою з відступом, не на всю ширину */
 .topbar {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(246, 244, 240, 0.85);
-  -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
-  border-bottom: 1px solid transparent; transition: border-color .2s;
+  position: fixed; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0; z-index: 50;
+  padding: 0 16px; pointer-events: none;
+  animation: nav-drop .8s var(--ease-out) .1s both;
 }
-.topbar.is-scrolled { border-bottom-color: var(--line); }
-.topbar__inner { display: flex; align-items: center; gap: 24px; height: 72px; }
+.topbar__inner {
+  position: relative; pointer-events: auto;
+  display: flex; align-items: center; gap: 20px;
+  max-width: 1080px; height: 64px; margin: 0 auto; padding: 0 10px 0 12px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px); backdrop-filter: saturate(1.6) blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 999px;
+  box-shadow: 0 1px 0 rgba(31, 34, 38, 0.04), 0 12px 32px -18px rgba(31, 34, 38, 0.35);
+  transition: height .35s var(--ease), max-width .45s var(--ease), background .3s, box-shadow .3s;
+}
+/* після прокрутки острів трохи стискається й стає щільнішим */
+.topbar.is-scrolled .topbar__inner {
+  height: 58px; max-width: 1000px; background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 1px 0 rgba(31, 34, 38, 0.05), 0 18px 40px -18px rgba(31, 34, 38, 0.45);
+}
 .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); flex: none; }
 .logo:hover { color: var(--ink); }
 .logo__mark {
@@ -76,12 +92,19 @@ img { display: block; max-width: 100%; }
 .logo__mark b { color: var(--accent); }
 .logo__name { font-weight: 600; font-size: 17px; letter-spacing: -0.02em; white-space: nowrap; }
 
-.menu { display: flex; gap: 4px; margin: 0 auto; }
+.menu { position: relative; display: flex; gap: 2px; margin: 0 auto; }
 .menu a {
+  position: relative; z-index: 1;
   padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 500; color: var(--ink-2); white-space: nowrap;
-  transition: color .2s, background .2s;
+  transition: color .25s;
 }
-.menu a:hover, .menu a.is-active { color: var(--ink); background: var(--soft); }
+.menu a:hover, .menu a.is-active { color: var(--ink); }
+/* індикатор активного пункту — окремий шар, що переїжджає між пунктами */
+.menu__pill {
+  position: absolute; top: 0; left: 0; height: 100%; width: 0; z-index: 0;
+  border-radius: 999px; background: var(--soft); opacity: 0; pointer-events: none;
+  transition: transform .5s var(--ease-spring), width .5s var(--ease-spring), opacity .25s;
+}
 .menu__phone { display: none; }
 .topbar__end { display: flex; align-items: center; gap: 16px; flex: none; }
 .phone-link { font-weight: 600; font-size: 15px; color: var(--ink); white-space: nowrap; }
@@ -95,7 +118,7 @@ img { display: block; max-width: 100%; }
 .burger[aria-expanded="true"] span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
 
 /* ---------- Перший екран ---------- */
-.hero2 { padding: 40px 0 96px; }
+.hero2 { padding: 128px 0 96px; }
 .hero2__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center; }
 .hero2 h1 { font-size: clamp(40px, 5.4vw, 72px); line-height: 1.02; letter-spacing: -0.04em; margin-bottom: 22px; }
 .lead-text { font-size: 18px; line-height: 1.55; max-width: 440px; margin-bottom: 32px; }
@@ -251,18 +274,27 @@ img { display: block; max-width: 100%; }
   .burger { display: flex; }
   .phone-link { display: none; }
   .topbar__end { margin-left: auto; }
+  .topbar__inner { gap: 12px; }
   .menu {
-    position: absolute; top: 72px; left: 12px; right: 12px; margin: 0;
+    position: absolute; top: calc(100% + 10px); left: 0; right: 0; margin: 0;
     flex-direction: column; gap: 2px; padding: 10px;
-    background: var(--card); border-radius: 20px; box-shadow: 0 24px 48px -16px rgba(31, 34, 38, 0.3);
-    opacity: 0; visibility: hidden; transform: translateY(-8px);
-    transition: opacity .2s var(--ease), transform .25s var(--ease), visibility .2s;
+    background: var(--card); border-radius: 24px; box-shadow: 0 24px 48px -16px rgba(31, 34, 38, 0.3);
+    opacity: 0; visibility: hidden; transform: translateY(-10px) scale(0.97); transform-origin: top right;
+    transition: opacity .2s var(--ease), transform .35s var(--ease-spring), visibility .2s;
   }
   .menu.is-open { opacity: 1; visibility: visible; transform: none; }
-  .menu a { padding: 14px 16px; font-size: 17px; border-radius: 12px; }
+  .menu__pill { display: none; }
+  .menu a { padding: 14px 16px; font-size: 17px; border-radius: 12px; opacity: 0; transform: translateY(-6px); transition: opacity .3s, transform .4s var(--ease-out), background .2s; }
+  .menu a:hover, .menu a.is-active { background: var(--soft); }
+  .menu.is-open a { opacity: 1; transform: none; }
+  .menu.is-open a:nth-child(2) { transition-delay: .03s; }
+  .menu.is-open a:nth-child(3) { transition-delay: .06s; }
+  .menu.is-open a:nth-child(4) { transition-delay: .09s; }
+  .menu.is-open a:nth-child(5) { transition-delay: .12s; }
+  .menu.is-open a:nth-child(6) { transition-delay: .15s; }
   .menu__phone { display: block; color: var(--ink) !important; font-weight: 600; border-top: 1px solid var(--line); border-radius: 0 0 12px 12px !important; margin-top: 4px; }
 
-  .hero2 { padding: 24px 0 72px; }
+  .hero2 { padding: 104px 0 72px; }
   .hero2__grid, .order2, .contact2 { grid-template-columns: 1fr; gap: 40px; }
   .hero2__photo { order: -1; aspect-ratio: 16 / 10; }
   .block { padding: 80px 0; }
@@ -274,15 +306,17 @@ img { display: block; max-width: 100%; }
 }
 
 @media (max-width: 767.98px) {
+  /* таб-бар вужчий за екран і по центру — теж «острів» */
   .dock2 {
-    position: fixed; z-index: 60; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom));
+    position: fixed; z-index: 60; left: 0; right: 0; margin: 0 auto; width: min(320px, calc(100% - 48px));
+    bottom: max(16px, env(safe-area-inset-bottom));
     display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 999px;
     background: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     box-shadow: 0 16px 40px -12px rgba(31, 34, 38, 0.35); border: 1px solid var(--line);
     transform: translateY(150%); transition: transform .4s cubic-bezier(.32, .72, 0, 1);
   }
   .dock2.is-shown { transform: none; }
-  .dock2 .btn-pill { min-height: 48px; padding: 0 12px; }
+  .dock2 .btn-pill { min-height: 46px; padding: 0 12px; font-size: 14px; }
   .dock2 .btn-pill--ghost { border-color: transparent; background: var(--soft); }
   .foot { padding-bottom: 104px; }
 }
@@ -306,9 +340,44 @@ img { display: block; max-width: 100%; }
   .hero2__facts > div + div { padding-left: 0; border-left: 0; }
 }
 
+/* ---------- Анімації ---------- */
+/* Перший екран — CSS-анімації з затримками: працюють і без JS, завжди доходять до кінця */
+.hero2 .eyebrow, .hero2 h1, .hero2 .lead-text, .hero2__actions, .hero2__facts { animation: rise .9s var(--ease-out) both; }
+.hero2 .eyebrow { animation-delay: .15s; }
+.hero2 h1 { animation-delay: .22s; }
+.hero2 .lead-text { animation-delay: .32s; }
+.hero2__actions { animation-delay: .42s; }
+.hero2__facts { animation-delay: .52s; }
+.hero2__photo { animation: photo-in 1.3s var(--ease-out) .2s both; }
+.hero2__photo img { animation: photo-zoom 1.8s var(--ease-out) .2s both; }
+
+/* Поява при прокрутці: клас .rv ставить JS, тож без JS усе видно одразу */
+.rv { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); transition-delay: var(--d, 0s); }
+.rv.is-in { opacity: 1; transform: none; }
+.rv-img { clip-path: inset(10% 6% 0 6% round 28px); transition: clip-path 1.1s var(--ease-out); transition-delay: var(--d, 0s); }
+.rv-img > img, img.rv-img { transition: transform 1.4s var(--ease-out); }
+.rv-img.is-in { clip-path: inset(0 0 0 0 round 0px); }
+
+/* дрібна взаємодія: кнопки, стрілки, іконки */
+.btn-pill--dark .fa, .cat__arrow { transition: transform .3s var(--ease), background .2s, color .2s; }
+.cat:hover .cat__arrow { transform: translateX(3px); }
+.feat { transition: transform .35s var(--ease), background .3s; }
+.feat:hover { transform: translateY(-4px); background: #f1ede6; }
+.feat__icon { transition: transform .5s var(--ease-pop); }
+.feat:hover .feat__icon { transform: rotate(-8deg) scale(1.08); }
+.rev { transition: transform .35s var(--ease); }
+.rev:hover { transform: translateY(-4px); }
+
+@keyframes nav-drop { from { opacity: 0; transform: translateY(-24px); } }
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } }
+@keyframes photo-in { from { opacity: 0; clip-path: inset(8% 8% 8% 8% round 40px); } to { opacity: 1; clip-path: inset(0 0 0 0 round 28px); } }
+@keyframes photo-zoom { from { transform: scale(1.15); } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  * { transition: none !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .rv { opacity: 1; transform: none; }
+  .rv-img { clip-path: none; }
 }
 
 @media (max-width: 480px) {
