@@ -105,8 +105,10 @@ img { display: block; max-width: 100%; }
 .hero2__facts > div + div { padding-left: 16px; border-left: 1px solid var(--line); }
 .hero2__facts dt { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 2px; }
 .hero2__facts dd { margin: 0; font-weight: 600; color: var(--ink); }
-.hero2__photo { margin: 0; border-radius: 28px; overflow: hidden; aspect-ratio: 5 / 4; background: var(--soft); box-shadow: var(--shadow); }
-.hero2__photo img { width: 100%; height: 100%; object-fit: cover; }
+/* Колаж із трьох реальних фото з Instagram салону (вертикальні кадри з рілсів) */
+.hero2__collage { display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; height: clamp(420px, 44vw, 600px); }
+.hc { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 22px; background: var(--soft); }
+.hc--1 { grid-row: span 2; box-shadow: var(--shadow); }
 
 /* ---------- Секції ---------- */
 .block { padding: 112px 0; }
@@ -122,7 +124,7 @@ img { display: block; max-width: 100%; }
   transition: transform .3s var(--ease), box-shadow .3s var(--ease);
 }
 .cat:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-.cat__img { aspect-ratio: 4 / 3; overflow: hidden; background: var(--soft); }
+.cat__img { aspect-ratio: 1 / 1; overflow: hidden; background: var(--soft); }
 .cat__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
 .cat:hover .cat__img img { transform: scale(1.04); }
 .cat__body { padding: 20px 64px 22px 22px; }
@@ -148,6 +150,7 @@ img { display: block; max-width: 100%; }
 .order2__photos { position: relative; padding-bottom: 64px; padding-right: 64px; }
 .op { border-radius: var(--radius); object-fit: cover; background: var(--soft); }
 .op--a { width: 100%; aspect-ratio: 4 / 5; }
+.order2__photos--single { padding: 0; max-width: 460px; }
 .op--b { position: absolute; right: 0; bottom: 0; width: 46%; aspect-ratio: 1; border: 8px solid var(--bg); border-radius: 24px; }
 .order2__text h2 { margin-bottom: 32px; }
 .steps2 { list-style: none; padding: 0; margin: 0 0 36px; }
@@ -264,7 +267,7 @@ img { display: block; max-width: 100%; }
 
   .hero2 { padding: 24px 0 72px; }
   .hero2__grid, .order2, .contact2 { grid-template-columns: 1fr; gap: 40px; }
-  .hero2__photo { order: -1; aspect-ratio: 16 / 10; }
+  .hero2__collage { order: -1; height: clamp(340px, 70vw, 520px); }
   .block { padding: 80px 0; }
   .block__head { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 36px; }
   .rating-big { text-align: left; }
@@ -289,7 +292,8 @@ img { display: block; max-width: 100%; }
 
 @media (max-width: 639.98px) {
   .container { padding-left: 16px; padding-right: 16px; }
-  .hero2__photo { aspect-ratio: 4 / 3; border-radius: 22px; }
+  .hero2__collage { gap: 10px; height: 380px; }
+  .hc { border-radius: 18px; }
   .hero2__actions .btn-pill { flex: 1 1 auto; }
   .hero2__facts dd { font-size: 14px; }
   .cat-grid, .reviews2, .features { grid-template-columns: 1fr; }
